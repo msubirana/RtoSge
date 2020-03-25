@@ -1,7 +1,7 @@
 #' @title ToSge
 #'
-#' @description Lazy R parser for R
-#' @param cores Do you agree dogs are the best pet? Defaults to TRUE.
+#' @description SGR parser for R
+#' @param cores Cores to use
 #' @param name Name of the job
 #' @param queue Queue where to run the script. choose one of the follow possibilities: 'imppc', 'imppc12', 'imppcv3'
 #' @param log Full path of log file, the name of the file will be the date + name of the job
@@ -9,10 +9,11 @@
 #' @param script Full path of script to run
 #' @param memmory Amount of RAM GB
 #' @param email Email where to send notifications
-#'
+#' @param source Source to load
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' cores = '16'
 #' name = 'mapInsu'
 #' queue = 'imppcv3'
@@ -20,6 +21,7 @@
 #' script = '/imppc/labs/lplab/share/marc/bin/Strelka.sh'
 #' memmory = '8'
 #' email = 'clusterigtpmsubirana@gmail.com'
+#' source = 'venv/path/activate'
 #' toSge(cores=cores,
 #'       name=name,
 #'       queue=queue,
@@ -27,7 +29,8 @@
 #'       venv=venv,
 #'       script=script,
 #'       memmory=memmory,
-#'       email=email)
+#'       email=email,
+#'       source=soucre)
 #'
 #' toSge()
 
@@ -38,7 +41,8 @@ toSge <- function(cores=NULL,
           venv=NULL,
           script=NULL,
           memmory=NULL,
-          email=NULL) {
+          email=NULL,
+          source=NULL) {
   # import packages
   #install.packages("glue")
   fileName = paste0(Sys.Date(), "_", name, ".log")
@@ -53,9 +57,6 @@ toSge <- function(cores=NULL,
               '#$ -N {name}\n',
               '# name of the queue you want to use\n',
               '#$ -q {queue}\n',
-              '# In order to load the environment variables and your path\n',
-              '# You can either use this or do a : source /etc/profile\n',
-              '#$ -V\n',
               '#$ -e {log}\n',
               '# You can redirect the output to a specific file\n',
               '#$ -o {log}\n',
@@ -65,6 +66,16 @@ toSge <- function(cores=NULL,
               '#$ -M {email}\n')
 
   write(cmd, file='/imppc/labs/lplab/share/tmpSge/tmpToSge.sh')
+
+  # add source if exists
+  if (!is.null(source)) {
+    cmd <- glue('# In order to load the environment variables and your path\n',
+                '# You can either use this or do a : source /etc/profile\n',
+                '#$ -V source {source}\n')
+    write(cmd,
+          file='/imppc/labs/lplab/share/tmpSge/tmpToSge.sh',
+          append = TRUE)
+  }
 
   if (!is.null(cores)) {
     cmd <- glue('#$ -pe smp {cores}\n')
