@@ -9,7 +9,6 @@
 #' @param script Full path of script to run
 #' @param memmory Amount of RAM GB
 #' @param email Email where to send notifications
-#' @param source Source to load
 #' @export
 #'
 #' @examples
@@ -21,7 +20,6 @@
 #' script = '/imppc/labs/lplab/share/marc/bin/Strelka.sh'
 #' memmory = '8'
 #' email = 'clusterigtpmsubirana@gmail.com'
-#' source = 'venv/path/activate'
 #' toSge(cores=cores,
 #'       name=name,
 #'       queue=queue,
@@ -29,20 +27,19 @@
 #'       venv=venv,
 #'       script=script,
 #'       memmory=memmory,
-#'       email=email,
-#'       source=soucre)
+#'       email=email)
 #'
 #' toSge()
 
 toSge <- function(cores=NULL,
-          name=NULL,
-          queue='imppc',
-          log=NULL,
-          venv=NULL,
-          script=NULL,
-          memmory=NULL,
-          email=NULL,
-          source=NULL) {
+                  name=NULL,
+                  queue='imppc',
+                  log=NULL,
+                  venv=NULL,
+                  script=NULL,
+                  memmory=NULL,
+                  email=NULL,
+                  source=NULL) {
   # import packages
   #install.packages("glue")
   fileName = paste0(Sys.Date(), "_", name, ".log")
@@ -66,16 +63,6 @@ toSge <- function(cores=NULL,
               '#$ -M {email}\n')
 
   write(cmd, file='/imppc/labs/lplab/share/tmpSge/tmpToSge.sh')
-
-  # add source if exists
-  if (!is.null(source)) {
-    cmd <- glue('# In order to load the environment variables and your path\n',
-                '# You can either use this or do a : source /etc/profile\n',
-                '#$ -V source {source}\n')
-    write(cmd,
-          file='/imppc/labs/lplab/share/tmpSge/tmpToSge.sh',
-          append = TRUE)
-  }
 
   if (!is.null(cores)) {
     cmd <- glue('#$ -pe smp {cores}\n')
